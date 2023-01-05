@@ -1,178 +1,296 @@
-import '../node_modules/normalize.css/normalize.css';
-import './style.css';
-
-/*
- * Задание:
- * Реализовать ToDoList приложение которое будет отображать список всех дел
- * Можно: просмотреть список всех дел, добавить todo и удалить, а так же изменить
- *
- * */
-
 class ApiService {
+
     fetchAllTodos() {
-        return fetch('/api/todos').then((res) => res.json());
+        return fetch('https://jsonplaceholder.typicode.com/posts')
+        .then((res) => res.json());
     }
 
     create(data) {
-        return fetch('/api/todos', {
+        return fetch('https://jsonplaceholder.typicode.com/posts',{
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json; charset=UTF-8'
             },
+            body: JSON.stringify(data)
+        }).then((res) => res.json())
+    }
+
+    edit(data, updId) {
+        const id = updId;
+        return fetch(`https://jsonplaceholder.typicode.com/posts/${id}`,{
+            method: 'PATCH',
             body: JSON.stringify(data),
-        }).then((res) => {
-            return res.json();
-        });
+            headers:{
+                'Content-type': 'application/json; charset=UTF-8',
+              },
+        }).then((res) => res.json())
+    }
+
+    getName(id) {
+        return fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
+        .then((res) => res.json())
+        .then((json) => json.username);
     }
 
     remove(id) {
-        return fetch(`/api/todos/${id}`, {
-            method: 'DELETE',
+        return fetch(`https://jsonplaceholder.typicode.com/posts/${id}`,{
+            method:'DELETE',
         });
     }
 }
 
-// Отвечает за рендер
-class TodoService {
-    toToList;
+class ToDoService{
 
     constructor(api) {
         this.api = api;
-        this.toToList = window.document.querySelector('.todo-list');
+        this.toDoList = window.document.querySelector('.todos__container');
         this._handleRemove = this._handleRemove.bind(this);
+        this.openEditModal = this.openEditModal.bind(this);
+        this._onEdit = this._onEdit.bind(this);
+        this.editModal = document.querySelector('.edit-modal');
+        
+    }
+    addTodo(name, title, body, id) {
+        
+        this.toDoList.append(this._createTodo(name, title, body, id));
     }
 
-    addTodo(number, title, description) {
-        this.toToList.append(this._createTodo(number, title, description));
-    }
-
-    _createTodo(number, title, description) {
+    _createTodo(name, title, body, id){
+        
         const container = document.createElement('div');
-        container.classList.add('todo-list__item');
-        container.cardId = number;
-        container.classList.add('card');
-        const header = document.createElement('div');
-        header.classList.add('card__header');
-        const content = document.createElement('div');
-        content.classList.add('card__content');
+        container.classList.add('todo__content');
+    
+        const userName = document.createElement('div');
+        userName.classList.add('username');
+        const nameElem = document.createElement('h3');
+        nameElem.append(document.createTextNode(name));
 
-        const numberEl = document.createElement('h3');
-        numberEl.append(document.createTextNode(number));
-        numberEl.classList.add('card__number');
+        const idUser = document.createElement('div');
+        idUser.classList.add('idForEdit');
+        const IdUserElem = document.createElement('h3');
+        IdUserElem.append(document.createTextNode(`UserId: ${name}`));
+    
+        this.api.getName(name).then((name) => nameElem.textContent = `UserName: ${name}`)
 
-        const titleEl = document.createElement('h3');
-        titleEl.append(document.createTextNode(title));
-        titleEl.classList.add('card__title');
+        const info = document.createElement('div');
+        info.classList.add('info');
+        const titleEl = document.createElement('div');
+        titleEl.classList.add('title');
+        const titleHead = document.createElement('h4');
+        titleHead.append(document.createTextNode(`Title: ${title}`));
+        const bodyEl = document.createElement('div');
+        bodyEl.classList.add('body');
+        const bodyHead = document.createElement('p');
+        bodyHead.append(document.createTextNode(body));
 
-        content.append(document.createTextNode(description));
-        content.classList.add('card__description');
+        const editContainer = document.createElement('div');
+        editContainer.classList.add('edit-button')
+        const editBtn = document.createElement('button');
+        editBtn.append(document.createTextNode('Edit'));
+        
+        const delContainer = document.createElement('div');
+        delContainer.classList.add('delete-button')
+        const delBtn = document.createElement('button');
+        delBtn.append(document.createTextNode('Delete'));
 
-        const btnEl = document.createElement('button');
-        btnEl.append(document.createTextNode('x'));
-        btnEl.classList.add('card__remove');
+        const buttonCont = document.createElement('div');
+        buttonCont.classList.add('buttons')
 
-        header.append(numberEl);
-        header.append(titleEl);
-        header.append(btnEl);
 
-        container.append(header);
-        container.append(content);
-        btnEl.addEventListener('click', this._handleRemove);
+        titleEl.append(titleHead);
+        bodyEl.append(bodyHead);
+        delContainer.append(delBtn);
+        editContainer.append(editBtn);
+
+        info.append(titleEl);
+        info.append(bodyEl);
+        userName.append(nameElem);
+        idUser.append(IdUserElem);
+
+        container.append(userName);
+        container.append(idUser);
+        container.append(info);
+        
+        buttonCont.append(delContainer);
+        buttonCont.append(editContainer);
+        container.append(buttonCont);
+
+        container.setAttribute('id', id);
+
+        delBtn.addEventListener('click', this._handleRemove);
+        editBtn.addEventListener('click', this.openEditModal);
 
         return container;
     }
 
     _handleRemove(event) {
-        const card = event.target.parentElement.parentElement;
-        this.api.remove(card.cardId).then((res) => {
-            if (res.status >= 200 && res.status <= 300) {
-                event.target.removeEventListener('click', this._handleRemove);
-                card.remove();
+        const todo = event.target.parentElement.parentElement.parentElement;
+        
+        this.api.remove(todo.id).then((res) => {
+            if(res.status >= 200 && res.status <= 300){
+                event.target.removeEventListener('click',this._handleRemove);
+                todo.remove();
             }
-        });
+        })
+    }
+
+    openEditModal(event) {
+        this.editModal.classList.toggle('hidden');
+        const id = event.target.parentElement.parentElement.parentElement.id;
+        const elem = event.target.parentElement.parentElement.parentElement;
+        const userName = elem.querySelector('.idForEdit h3'),
+                  title = elem.querySelector('.info .title h4'),
+                  body = elem.querySelector('.info .body p');
+
+        document.getElementsByName('title')[0].placeholder = `${title.textContent}`;
+        document.getElementsByName('userid')[0].placeholder = `${userName.textContent}`;
+        document.getElementsByName('body')[0].placeholder = `${body.textContent}`;
+        const editBtn = document.querySelector('.on-edit-button');
+        editBtn.addEventListener('click',() => this._onEdit(event, id, elem));
+        
+    }
+
+    closeEdit() {
+
+        this.editModal.classList.toggle('hidden');
+    }
+
+    _onEdit(event, id,elem) {
+
+        event.preventDefault();
+
+        const formData = {};
+        const form = document.forms[0];
+        const userName = elem.querySelector('.username h3'),
+                  title = elem.querySelector('.info .title h4'),
+                  body = elem.querySelector('.info .body p'),
+                  changedId = elem.querySelector('.idForEdit h3');  
+
+            Array.from(form.elements)
+            .filter((item) => !!item.name)
+            .forEach((elem) => {
+                formData[elem.name] = elem.value;
+            });  
+
+        formData['id'] = id;
+
+        if (!this._validateForm(form, formData)) {
+            return;
+        }
+        
+        const userid = formData['userid'];
+        this.api.edit(formData, id).then((data) => {
+            title.textContent = `${data.title}`;
+            body.textContent = `${data.body}`;
+            changedId.textContent = `UserId: ${userid}`;
+
+        }).then(this.api.getName(userid).then((name) => userName.textContent = `UserName: ${name}`));
+        form.reset();
+        this.closeEdit();
+    }
+
+    _validateForm(form, formData) {
+        const errors = [];
+        if (formData.userid > 10 || formData.userid < 0 || isNaN(+formData.userid)) {
+            errors.push('Поле UserId не должно иметь значения больше 10 или меньше 0');
+        }
+        if (!formData.userid.length || !formData.title.length || !formData.body.length) {
+            errors.push('Все поля должны быть заполнены!');
+        }
+
+        if (errors.length) {
+            const errorEl = form.getElementsByClassName('form-errors')[0];
+            errorEl.innerHTML = errors.map((er) => `<div>${er}</div>`).join('');
+
+            return false;
+        }
+
+        return true;
     }
 }
 
 class MainService {
-    constructor(todoService, modalService, api) {
+    constructor(toDoService, modalService, api){
         this.modalService = modalService;
         this.api = api;
-        this.todoService = todoService;
-        document.getElementsByClassName('app');
-        this.btn = document.getElementById('addBtn');
-        this.btn.addEventListener('click', (e) => this._onOpenModal(e));
+        this.toDoService = toDoService;
+        this.addBtn = document.querySelector('.add-button');
+        this.addBtn.addEventListener('click', (e) => this._onOpenModal(e));
     }
 
     fetchAllTodo() {
+        
         this.api.fetchAllTodos().then((todos) => {
             todos.forEach((todo) =>
-                this.todoService.addTodo(todo.id, todo.title, todo.description)
+            
+                this.toDoService.addTodo(todo.userId, todo.title, todo.body, todo.id)
             );
         });
     }
 
-    _onOpenModal() {
+    _onOpenModal( ) {
         this.modalService.open();
     }
 }
 
 class ModalService {
-    constructor(todoService, api) {
+    constructor(toDoService, api) {
         this.api = api;
-        this.todoService = todoService;
-        this.overlay = document.querySelector('.overlay');
-        this.modal = document.querySelector('.modal');
-
+        this.toDoService = toDoService;
+        this.addModal = document.querySelector('.add-modal');
+        this.editModal = document.querySelector('.edit-modal');
+        this.editListener = this.closeEdit.bind(this);
+        document.querySelector('.edit-close').addEventListener('click', this.editListener);
         this.listener = this.close.bind(this);
-        document
-            .querySelector('.modal svg')
-            .addEventListener('click', this.listener);
+        document.querySelector('.add-close').addEventListener('click', this.listener);
 
         this.submitBtn = document.querySelector('.submit-btn');
         this.submitBtn.addEventListener('click', this._onCreate.bind(this));
+
     }
 
     open() {
-        this.modal.classList.add('active');
-        this.overlay.classList.add('active');
+        this.addModal.classList.toggle('hidden');
     }
 
     close() {
-        this.modal.classList.remove('active');
-        this.overlay.classList.remove('active');
+        this.addModal.classList.toggle('hidden');
     }
 
-    _onCreate(e) {
-        e.preventDefault();
+    closeEdit() {
+        this.editModal.classList.toggle('hidden');
+    }
+
+    _onCreate(event) {
+        event.preventDefault();
 
         const formData = {};
-        const form = document.forms[0];
-
+        const form = document.forms[1];
         Array.from(form.elements)
             .filter((item) => !!item.name)
             .forEach((elem) => {
                 formData[elem.name] = elem.value;
             });
-
         if (!this._validateForm(form, formData)) {
             return;
         }
+        console.log(formData)
 
         this.api.create(formData).then((data) => {
-            this.todoService.addTodo(data.id, data.title, data.description);
+            this.toDoService.addTodo(data.userid, data.title, data.body, data.id);
         });
+
         form.reset();
         this.close();
     }
-
+   
     _validateForm(form, formData) {
         const errors = [];
-        //вместо if используются отдельные функции-валидаторы
-        if (formData.title.length >= 30) {
-            errors.push('Поле наименование должно иметь не более 30 символов');
+        if (formData.userid > 10 || formData.userid < 0 || isNaN(+formData.userid)){
+            errors.push('Поле UserId не должно иметь значения больше 10 или меньше 0');
         }
-        if (!formData.description.length) {
-            errors.push('Поле описание должно быть заполнено');
+        if (!formData.userid.length || !formData.title.length || !formData.body.length) {
+            errors.push('Все поля должны быть заполнены!');
         }
 
         if (errors.length) {
@@ -187,8 +305,7 @@ class ModalService {
 }
 
 const api = new ApiService();
-const todoService = new TodoService(api);
-const modalService = new ModalService(todoService, api);
-const service = new MainService(todoService, modalService, api);
+const toDoService = new ToDoService(api);
+const modalService = new ModalService(toDoService, api);
+const service = new MainService(toDoService, modalService, api);
 service.fetchAllTodo();
-//todo: изменение не реализовано
