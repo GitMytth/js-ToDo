@@ -184,7 +184,7 @@ class ToDoService{
             changedId.textContent = `UserId: ${userid}`;
 
         }).then(this.api.getName(userid).then((name) => userName.textContent = `UserName: ${name}`));
-        form.reset();
+        form.reset();   // очищение формы
         this.closeEdit();
     }
 
@@ -254,9 +254,6 @@ class ModalService {
 
     close() {
         this.addModal.classList.toggle('hidden');
-        const form = document.querySelector('.add-modal .modal-form');
-        console.log(form.elements)
-
     }
 
     closeEdit() {
@@ -281,7 +278,7 @@ class ModalService {
             this.toDoService.addTodo(data.userid, data.title, data.body, data.id);
         });
 
-        form.reset();
+        form.reset();  // очищение формы
         this.close();
     }
    
