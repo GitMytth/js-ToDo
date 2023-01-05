@@ -124,10 +124,10 @@ class ToDoService{
     }
 
     _handleRemove(event) {
-        const todo = event.target.parentElement.parentElement.parentElement;
+        const todo = event.target.closest('.todo__content');
         
         this.api.remove(todo.id).then((res) => {
-            if(res.status >= 200 && res.status <= 300){
+            if(res.status >= 200 && res.status < 300){
                 event.target.removeEventListener('click',this._handleRemove);
                 todo.remove();
             }
@@ -136,18 +136,17 @@ class ToDoService{
 
     openEditModal(event) {
         this.editModal.classList.toggle('hidden');
-        const id = event.target.parentElement.parentElement.parentElement.id;
-        const elem = event.target.parentElement.parentElement.parentElement;
+        const id = event.target.closest('.todo__content').id;
+        const elem = event.target.closest('.todo__content');
         const userName = elem.querySelector('.idForEdit h3'),
                   title = elem.querySelector('.info .title h4'),
                   body = elem.querySelector('.info .body p');
-
-        document.getElementsByName('title')[0].placeholder = `${title.textContent}`;
-        document.getElementsByName('userid')[0].placeholder = `${userName.textContent}`;
-        document.getElementsByName('body')[0].placeholder = `${body.textContent}`;
+                  
+        document.getElementById('edit_title').placeholder = `${title.textContent}`;
+        document.getElementById('edit_userid').placeholder = `${userName.textContent}`;
+        document.getElementById('edit_body').placeholder = `${body.textContent}`;
         const editBtn = document.querySelector('.on-edit-button');
         editBtn.addEventListener('click',() => this._onEdit(event, id, elem));
-        
     }
 
     closeEdit() {
@@ -160,7 +159,7 @@ class ToDoService{
         event.preventDefault();
 
         const formData = {};
-        const form = document.forms[0];
+        const form = document.querySelector('.edit-modal .modal-form');
         const userName = elem.querySelector('.username h3'),
                   title = elem.querySelector('.info .title h4'),
                   body = elem.querySelector('.info .body p'),
@@ -255,6 +254,9 @@ class ModalService {
 
     close() {
         this.addModal.classList.toggle('hidden');
+        const form = document.querySelector('.add-modal .modal-form');
+        console.log(form.elements)
+
     }
 
     closeEdit() {
@@ -265,7 +267,7 @@ class ModalService {
         event.preventDefault();
 
         const formData = {};
-        const form = document.forms[1];
+        const form = document.querySelector('.add-modal .modal-form');
         Array.from(form.elements)
             .filter((item) => !!item.name)
             .forEach((elem) => {
@@ -274,7 +276,6 @@ class ModalService {
         if (!this._validateForm(form, formData)) {
             return;
         }
-        console.log(formData)
 
         this.api.create(formData).then((data) => {
             this.toDoService.addTodo(data.userid, data.title, data.body, data.id);
