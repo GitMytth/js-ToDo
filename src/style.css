@@ -1,41 +1,95 @@
 @import './modal.css';
-@import './todo.css';
 
 html {
     height: 100%;
     font-size: 16px;
 }
 
-body {
+body{
+    margin:0;
     height: 100%;
     min-height: 100%;
     font: normal 400 15px/24px 'Roboto', sans-serif;
-    background-color: #f6f7f8;
+    text-align: center;
+    background-color: #d3d5d6;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-
-div {
-    box-sizing: border-box;
-}
-
-ul,
-ol {
-    list-style: none;
-    padding: 0;
+header {
     margin: 0;
+    background-color: #fafaff;
+    filter: drop-shadow(0px 4px 24px rgba(0, 0, 0, 0.12));
 }
 
-a {
-    color: #336fee;
-    outline: none;
-    text-decoration: none;
+.logo {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center; 
+    display: inline-block;
+    max-width: 120px;
+    border-radius: 25% 10%;
+    background-color: #fffb00;
 }
 
-/* Стили для кнопок. Мы ведь порядочные разработчики, негоже простые ссылки оставлять */
+.todos__container{
+    display: inline-block;
+    border: 10px solid black;
+    padding: 10px;
+    flex-flow: column nowrap;
+    align-items: center;
+    background-color: #fafaff;
+    filter: drop-shadow(0px 4px 24px rgba(0, 0, 0, 0.12));
+}
 
-button {
+.todo__content{
+    display: flexbox;
+    margin-bottom: 20px;
+    background: aquamarine;
+    max-height: 700px;
+    width: 700px;
+    border: 10px solid black;
+    border-radius: 10px;
+}
+
+.username{
+    display: inline-block;
+    width: 300px;
+    height: 120px;
+    border-radius: 10px;
+    margin-right: 10px;
+
+}
+.username h3{
+    padding-top: 25px;
+}
+
+.idForEdit {
+    display: inline;
+    width: 300px;
+    height: 10px;
+    border-radius: 10px;
+    margin-right: 10px;
+}
+
+.idForEdit h3{
+    padding: 0;
+}
+
+.info{
+   width:500px;
+   display: inline-block;
+   margin-right: 15px;
+
+}
+
+.title{
+    display: inline-block;
+    width: 100%;
+    border-radius: 10px;
+}
+
+button{
     padding: 8px;
     display: inline-block;
     text-decoration: none;
@@ -43,43 +97,46 @@ button {
     margin: 10px;
     color: #fff;
     border-radius: 3px;
+    width: 400px;
 }
 
-a:hover {
-    color: #6e87e1;
+button:hover {
+    background-color:#002ead;
+    transition: 0.7s;
 }
 
-img {
+.edit-button{
+    align-self: center;
+}
+
+.delete-button{
+    align-self: center;
+}
+
+.buttons{
+    display: flex;
+    flex-direction: column;
+}
+
+.add-button-container{
     width: 100%;
 }
 
-::-ms-clear {
-    display: none;
-}
-
-::-ms-reveal {
-    display: none;
-}
-
-.app {
+.add-button {
+    display: block;
     margin: 0 auto;
-    visibility: visible;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
 
-.container {
-    max-width: 1200px;
+.favor-content {
+    background-color: #fffb00;
 }
 
-.add-todo {
-    padding: 20px 0;
-    margin-bottom: 20px;
+.favor-button {
+    align-self: center;
 }
 
-.todo-list {
-    display: flex;
-    flex-flow: column nowrap;
-}
-
-.todo-list__item + .todo-list__item {
-    margin-top: 20px;
+.favor-container {
+    background-color: yellow;
 }
